@@ -1,0 +1,753 @@
+{
+	"info": {
+		"_postman_id": "e53baac7-7769-4c65-9c31-75512ba6de9b",
+		"name": "Task Management System",
+		"description": "API pour le système de gestion des tâches des organisations",
+		"schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json",
+		"_exporter_id": "7616442"
+	},
+	"item": [
+		{
+			"name": "Auth",
+			"item": [
+				{
+					"name": "Login as Admin",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"var jsonData = JSON.parse(responseBody);",
+									"postman.setEnvironmentVariable(\"adminToken\", jsonData.accessToken);"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n    \"username\": \"admin1\",\n    \"password\": \"Password123\"\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{baseUrl}}/api/auth/login",
+							"host": [
+								"{{baseUrl}}"
+							],
+							"path": [
+								"api",
+								"auth",
+								"login"
+							]
+						},
+						"description": "Connectez-vous en tant qu'administrateur"
+					},
+					"response": []
+				},
+				{
+					"name": "Login as Volunteer",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"var jsonData = JSON.parse(responseBody);",
+									"postman.setEnvironmentVariable(\"volunteerToken\", jsonData.accessToken);"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n    \"username\": \"volunteer1\",\n    \"password\": \"Password123\"\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{baseUrl}}/api/auth/login",
+							"host": [
+								"{{baseUrl}}"
+							],
+							"path": [
+								"api",
+								"auth",
+								"login"
+							]
+						},
+						"description": "Connectez-vous en tant que volontaire"
+					},
+					"response": []
+				},
+				{
+					"name": "Login as Employee",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"var jsonData = JSON.parse(responseBody);",
+									"postman.setEnvironmentVariable(\"employeeToken\", jsonData.accessToken);"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n    \"username\": \"employee1\",\n    \"password\": \"Password123\"\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{baseUrl}}/api/auth/login",
+							"host": [
+								"{{baseUrl}}"
+							],
+							"path": [
+								"api",
+								"auth",
+								"login"
+							]
+						},
+						"description": "Connectez-vous en tant qu'employé"
+					},
+					"response": []
+				},
+				{
+					"name": "Register New Volunteer",
+					"request": {
+						"auth": {
+							"type": "bearer",
+							"bearer": [
+								{
+									"key": "token",
+									"value": "{{adminToken}}",
+									"type": "string"
+								}
+							]
+						},
+						"method": "POST",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n    \"username\": \"volunteer5\",\n    \"password\": \"Password123\",\n    \"name\": \"New Volunteer\",\n    \"email\": \"newvolunteer@gmail.com\",\n    \"organizationId\": 1,\n    \"roles\": [\"ROLE_MEMBER\"],\n    \"available\": true\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{baseUrl}}/api/auth/signup",
+							"host": [
+								"{{baseUrl}}"
+							],
+							"path": [
+								"api",
+								"auth",
+								"signup"
+							]
+						},
+						"description": "Inscrire un nouveau volontaire"
+					},
+					"response": []
+				},
+				{
+					"name": "Register New Employee",
+					"request": {
+						"auth": {
+							"type": "bearer",
+							"bearer": [
+								{
+									"key": "token",
+									"value": "{{adminToken}}",
+									"type": "string"
+								}
+							]
+						},
+						"method": "POST",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n    \"username\": \"newemployee6\",\n    \"password\": \"password\",\n    \"name\": \"New Employee\",\n    \"email\": \"newemployee@gmail.com\",\n    \"organizationId\": 1,\n    \"roles\": [\"ROLE_MEMBER\"]\n}"
+						},
+						"url": {
+							"raw": "{{baseUrl}}/api/auth/signup",
+							"host": [
+								"{{baseUrl}}"
+							],
+							"path": [
+								"api",
+								"auth",
+								"signup"
+							]
+						},
+						"description": "Inscrire un nouvel employé"
+					},
+					"response": []
+				}
+			],
+			"description": "Opérations d'authentification"
+		},
+		{
+			"name": "Admin",
+			"item": [
+				{
+					"name": "Get Organisation Info",
+					"request": {
+						"auth": {
+							"type": "bearer",
+							"bearer": [
+								{
+									"key": "token",
+									"value": "eyJhbGciOiJIUzUxMiJ9.eyJzdWIiOiJhZG1pbjEiLCJyb2xlcyI6IlJPTEVfQURNSU4iLCJpYXQiOjE3NDI3NTg1NTQsImV4cCI6MTc0Mjg0NDk1NH0.AYgQP93AphEWQbcTkOyjopyFE71m2w3eAPF4bGK0l5wG_ZPlsr_LXxE5ZhbOw76wuzS93NCM_q9Ey87lKMOlcw",
+									"type": "string"
+								}
+							]
+						},
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{baseUrl}}/api/admin/organisation/1",
+							"host": [
+								"{{baseUrl}}"
+							],
+							"path": [
+								"api",
+								"admin",
+								"organisation",
+								"1"
+							]
+						},
+						"description": "Obtenir les informations d'une organisation"
+					},
+					"response": []
+				},
+				{
+					"name": "Search Member by ID",
+					"request": {
+						"auth": {
+							"type": "bearer",
+							"bearer": [
+								{
+									"key": "token",
+									"value": "{{adminToken}}",
+									"type": "string"
+								}
+							]
+						},
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{baseUrl}}/api/admin/member/2",
+							"host": [
+								"{{baseUrl}}"
+							],
+							"path": [
+								"api",
+								"admin",
+								"member",
+								"2"
+							]
+						},
+						"description": "Rechercher un membre par ID"
+					},
+					"response": []
+				},
+				{
+					"name": "List Organisation Tasks",
+					"request": {
+						"auth": {
+							"type": "bearer",
+							"bearer": [
+								{
+									"key": "token",
+									"value": "{{adminToken}}",
+									"type": "string"
+								}
+							]
+						},
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{baseUrl}}/api/admin/organisation/1/tasks",
+							"host": [
+								"{{baseUrl}}"
+							],
+							"path": [
+								"api",
+								"admin",
+								"organisation",
+								"1",
+								"tasks"
+							]
+						},
+						"description": "Lister les tâches d'une organisation"
+					},
+					"response": []
+				},
+				{
+					"name": "Search Task by ID",
+					"request": {
+						"auth": {
+							"type": "bearer",
+							"bearer": [
+								{
+									"key": "token",
+									"value": "{{adminToken}}",
+									"type": "string"
+								}
+							]
+						},
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{baseUrl}}/api/admin/task/1",
+							"host": [
+								"{{baseUrl}}"
+							],
+							"path": [
+								"api",
+								"admin",
+								"task",
+								"1"
+							]
+						},
+						"description": "Rechercher une tâche par ID"
+					},
+					"response": []
+				},
+				{
+					"name": "Search Tool by ID",
+					"request": {
+						"auth": {
+							"type": "bearer",
+							"bearer": [
+								{
+									"key": "token",
+									"value": "{{adminToken}}",
+									"type": "string"
+								}
+							]
+						},
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{baseUrl}}/api/admin/tool/1",
+							"host": [
+								"{{baseUrl}}"
+							],
+							"path": [
+								"api",
+								"admin",
+								"tool",
+								"1"
+							]
+						},
+						"description": "Rechercher un outil par ID"
+					},
+					"response": []
+				},
+				{
+					"name": "List Available Tools",
+					"request": {
+						"auth": {
+							"type": "bearer",
+							"bearer": [
+								{
+									"key": "token",
+									"value": "{{adminToken}}",
+									"type": "string"
+								}
+							]
+						},
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{baseUrl}}/api/admin/organisation/1/tools/available",
+							"host": [
+								"{{baseUrl}}"
+							],
+							"path": [
+								"api",
+								"admin",
+								"organisation",
+								"1",
+								"tools",
+								"available"
+							]
+						},
+						"description": "Lister les outils disponibles"
+					},
+					"response": []
+				},
+				{
+					"name": "Create Organisation",
+					"request": {
+						"auth": {
+							"type": "bearer",
+							"bearer": [
+								{
+									"key": "token",
+									"value": "{{adminToken}}",
+									"type": "string"
+								}
+							]
+						},
+						"method": "POST",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n    \"name\": \"Nouvelle Organisation\"\n}"
+						},
+						"url": {
+							"raw": "{{baseUrl}}/api/admin/organisation",
+							"host": [
+								"{{baseUrl}}"
+							],
+							"path": [
+								"api",
+								"admin",
+								"organisation"
+							]
+						},
+						"description": "Créer une nouvelle organisation"
+					},
+					"response": []
+				}
+			],
+			"description": "Opérations réservées aux administrateurs"
+		},
+		{
+			"name": "Member",
+			"item": [
+				{
+					"name": "Get User Profile",
+					"request": {
+						"auth": {
+							"type": "bearer",
+							"bearer": [
+								{
+									"key": "token",
+									"value": "{{volunteerToken}}",
+									"type": "string"
+								}
+							]
+						},
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{baseUrl}}/api/member/profile",
+							"host": [
+								"{{baseUrl}}"
+							],
+							"path": [
+								"api",
+								"member",
+								"profile"
+							]
+						},
+						"description": "Obtenir le profil de l'utilisateur connecté"
+					},
+					"response": []
+				},
+				{
+					"name": "Get Member Tasks",
+					"request": {
+						"auth": {
+							"type": "bearer",
+							"bearer": [
+								{
+									"key": "token",
+									"value": "{{volunteerToken}}",
+									"type": "string"
+								}
+							]
+						},
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{baseUrl}}/api/member/tasks",
+							"host": [
+								"{{baseUrl}}"
+							],
+							"path": [
+								"api",
+								"member",
+								"tasks"
+							]
+						},
+						"description": "Obtenir les tâches assignées au membre connecté"
+					},
+					"response": []
+				},
+				{
+					"name": "Add Tool to Task",
+					"request": {
+						"auth": {
+							"type": "bearer",
+							"bearer": [
+								{
+									"key": "token",
+									"value": "{{volunteerToken}}",
+									"type": "string"
+								}
+							]
+						},
+						"method": "POST",
+						"header": [],
+						"url": {
+							"raw": "{{baseUrl}}/api/member/task/1/tool/1",
+							"host": [
+								"{{baseUrl}}"
+							],
+							"path": [
+								"api",
+								"member",
+								"task",
+								"1",
+								"tool",
+								"1"
+							]
+						},
+						"description": "Ajouter un outil à une tâche"
+					},
+					"response": []
+				},
+				{
+					"name": "Get Task Tools",
+					"request": {
+						"auth": {
+							"type": "bearer",
+							"bearer": [
+								{
+									"key": "token",
+									"value": "{{volunteerToken}}",
+									"type": "string"
+								}
+							]
+						},
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{baseUrl}}/api/member/task/1/tools",
+							"host": [
+								"{{baseUrl}}"
+							],
+							"path": [
+								"api",
+								"member",
+								"task",
+								"1",
+								"tools"
+							]
+						},
+						"description": "Obtenir les outils utilisés dans une tâche"
+					},
+					"response": []
+				},
+				{
+					"name": "Update Task Status",
+					"request": {
+						"auth": {
+							"type": "bearer",
+							"bearer": [
+								{
+									"key": "token",
+									"value": "{{volunteerToken}}",
+									"type": "string"
+								}
+							]
+						},
+						"method": "PUT",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n    \"status\": \"IN_PROGRESS\"\n}"
+						},
+						"url": {
+							"raw": "{{baseUrl}}/api/member/task/1/status",
+							"host": [
+								"{{baseUrl}}"
+							],
+							"path": [
+								"api",
+								"member",
+								"task",
+								"1",
+								"status"
+							]
+						},
+						"description": "Mettre à jour le statut d'une tâche"
+					},
+					"response": []
+				},
+				{
+					"name": "Complete Task",
+					"request": {
+						"auth": {
+							"type": "bearer",
+							"bearer": [
+								{
+									"key": "token",
+									"value": "{{volunteerToken}}",
+									"type": "string"
+								}
+							]
+						},
+						"method": "PUT",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n    \"status\": \"DONE\"\n}"
+						},
+						"url": {
+							"raw": "{{baseUrl}}/api/member/task/1/status",
+							"host": [
+								"{{baseUrl}}"
+							],
+							"path": [
+								"api",
+								"member",
+								"task",
+								"1",
+								"status"
+							]
+						},
+						"description": "Marquer une tâche comme terminée"
+					},
+					"response": []
+				},
+				{
+					"name": "Add Comment to Task",
+					"request": {
+						"auth": {
+							"type": "bearer",
+							"bearer": [
+								{
+									"key": "token",
+									"value": "{{volunteerToken}}",
+									"type": "string"
+								}
+							]
+						},
+						"method": "PUT",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n    \"comment\": \"J'ai commencé le travail sur cette tâche et je rencontre quelques difficultés avec la configuration.\"\n}"
+						},
+						"url": {
+							"raw": "{{baseUrl}}/api/member/task/1/comment",
+							"host": [
+								"{{baseUrl}}"
+							],
+							"path": [
+								"api",
+								"member",
+								"task",
+								"1",
+								"comment"
+							]
+						},
+						"description": "Ajouter un commentaire à une tâche"
+					},
+					"response": []
+				}
+			],
+			"description": "Opérations pour les membres (volontaires et employés)"
+		}
+	],
+	"event": [
+		{
+			"listen": "prerequest",
+			"script": {
+				"type": "text/javascript",
+				"exec": [
+					""
+				]
+			}
+		},
+		{
+			"listen": "test",
+			"script": {
+				"type": "text/javascript",
+				"exec": [
+					""
+				]
+			}
+		}
+	],
+	"variable": [
+		{
+			"key": "baseUrl",
+			"value": "http://localhost:8080",
+			"type": "string"
+		}
+	]
+}
