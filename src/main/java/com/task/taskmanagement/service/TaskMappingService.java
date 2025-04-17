@@ -3,6 +3,7 @@ package com.task.taskmanagement.service;
 import com.task.taskmanagement.dto.response.TaskResponse;
 import com.task.taskmanagement.dto.response.OrganisationResponse;
 import com.task.taskmanagement.dto.response.ToolResponse;
+import com.task.taskmanagement.dto.response.UserResponse;
 import com.task.taskmanagement.model.Task;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
@@ -34,7 +35,18 @@ public class TaskMappingService {
                 .score(task.getScore());
         
         if (task.getAssignedMemberId() != null) {
-            builder.assignedMember(userService.getMemberById(task.getAssignedMemberId()));
+            UserResponse memberResponse = userService.getMemberById(task.getAssignedMemberId());
+            
+            UserResponse memberWithoutOrg = UserResponse.builder()
+                    .id(memberResponse.getId())
+                    .username(memberResponse.getUsername())
+                    .name(memberResponse.getName())
+                    .email(memberResponse.getEmail())
+                    .role(memberResponse.getRole())
+                    .userType(memberResponse.getUserType())
+                    .score(memberResponse.getScore())
+                    .build();
+            builder.assignedMember(memberWithoutOrg);
         }
         
         if (task.getOrganisationId() != null) {
@@ -63,5 +75,11 @@ public class TaskMappingService {
         }
         
         return builder.build();
+    }
+
+    public List<TaskResponse> convertToTaskResponses(List<Task> tasks) {
+        return tasks.stream()
+                .map(this::convertToTaskResponse)
+                .collect(Collectors.toList());
     }
 }

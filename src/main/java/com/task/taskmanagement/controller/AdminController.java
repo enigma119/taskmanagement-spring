@@ -10,7 +10,6 @@ import com.task.taskmanagement.dto.response.UserResponse;
 import com.task.taskmanagement.model.Task;
 import com.task.taskmanagement.model.User;
 import com.task.taskmanagement.model.enums.TaskStatus;
-import com.task.taskmanagement.repository.UserRepository;
 import com.task.taskmanagement.service.OrganisationService;
 import com.task.taskmanagement.service.TaskMappingService;
 import com.task.taskmanagement.service.TaskService;
@@ -20,7 +19,6 @@ import com.task.taskmanagement.security.RequestUtils;
 import jakarta.servlet.http.HttpServletRequest;
 
 import java.util.List;
-import java.util.stream.Collectors;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -38,21 +36,25 @@ import jakarta.validation.Valid;
 public class AdminController {
     private static final Logger logger = LoggerFactory.getLogger(AdminController.class);
 
-    @Autowired
-    private OrganisationService organisationService;
+    private final OrganisationService organisationService;
+    private final UserService userService;
+    private final ToolService toolService;
+    private final TaskService taskService;
+    private final TaskMappingService taskMappingService;
 
     @Autowired
-    private UserService userService;
-
-    @Autowired
-    private ToolService toolService;
-
-    @Autowired
-    private TaskService taskService;
-    
-    @Autowired
-    private TaskMappingService taskMappingService;
-
+    public AdminController(
+            OrganisationService organisationService,
+            UserService userService,
+            ToolService toolService,
+            TaskService taskService,
+            TaskMappingService taskMappingService) {
+        this.organisationService = organisationService;
+        this.userService = userService;
+        this.toolService = toolService;
+        this.taskService = taskService;
+        this.taskMappingService = taskMappingService;
+    }
 
     @GetMapping("/my-organisation")
     public ResponseEntity<OrganisationResponse> getMyOrganisation(HttpServletRequest request) {
@@ -74,29 +76,32 @@ public class AdminController {
         return ResponseEntity.ok(organisationService.getOrganisationInfo(id));
     }
 
+    // Lister tous les membres d'une organisation
     @GetMapping("/member/{id}")
     public ResponseEntity<UserResponse> getMemberById(@PathVariable String id) {
         return ResponseEntity.ok(userService.getMemberById(id));
     }
 
+    // Lister tous les membres de mon organisation
+    @GetMapping("/my-organisation/members")
+    public ResponseEntity<List<UserResponse>> getMembersByOrganisationId(HttpServletRequest request) {
+        User admin = RequestUtils.getCurrentUser(request);
+        return ResponseEntity.ok(userService.getMembersByOrganisationId(admin.getOrganisationId()));
+    }
+
     // Lister toutes les tâches d'une organisation
-    @GetMapping("/organisation/{id}/tasks")
-    public ResponseEntity<List<TaskResponse>> getTasksByOrganisationId(@PathVariable String id) {
-        List<Task> tasks = taskService.getTasksByOrganisationId(id);
-        List<TaskResponse> taskDTOs = tasks.stream()
-                .map(taskMappingService::convertToTaskResponse)
-                .collect(Collectors.toList());
-        return ResponseEntity.ok(taskDTOs);
+    @GetMapping("/organisation/tasks")
+    public ResponseEntity<List<TaskResponse>> getTasksByOrganisationId(HttpServletRequest request) {
+        User admin = RequestUtils.getCurrentUser(request);
+        List<Task> tasks = taskService.getTasksByOrganisationId(admin.getOrganisationId());
+        return ResponseEntity.ok(taskMappingService.convertToTaskResponses(tasks));
     }
     
     // Lister les tâches principales d'une organisation
     @GetMapping("/organisation/{id}/root-tasks")
     public ResponseEntity<List<TaskResponse>> getRootTasksByOrganisationId(@PathVariable String id) {
         List<Task> tasks = taskService.getRootTasksByOrganisationId(id);
-        List<TaskResponse> taskDTOs = tasks.stream()
-                .map(taskMappingService::convertToTaskResponse)
-                .collect(Collectors.toList());
-        return ResponseEntity.ok(taskDTOs);
+        return ResponseEntity.ok(taskMappingService.convertToTaskResponses(tasks));
     }
 
     // Rechercher une tâche par son ID
@@ -134,10 +139,7 @@ public class AdminController {
     @GetMapping("/task/{id}/subtasks")
     public ResponseEntity<List<TaskResponse>> getSubTasks(@PathVariable String id) {
         List<Task> subTasks = taskService.getSubTasks(id);
-        List<TaskResponse> subTaskDTOs = subTasks.stream()
-                .map(taskMappingService::convertToTaskResponse)
-                .collect(Collectors.toList());
-        return ResponseEntity.ok(subTaskDTOs);
+        return ResponseEntity.ok(taskMappingService.convertToTaskResponses(subTasks));
     }
 
     // Rechercher un outil par son ID

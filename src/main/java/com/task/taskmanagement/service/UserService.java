@@ -10,6 +10,9 @@ import org.springframework.stereotype.Service;
 import org.springframework.web.server.ResponseStatusException;
 
 import java.util.ArrayList;
+import java.util.Collections;
+import java.util.List;
+import java.util.stream.Collectors;
 
 @Service
 @RequiredArgsConstructor
@@ -33,7 +36,7 @@ public class UserService {
                 .username(user.getUsername())
                 .name(user.getName())
                 .email(user.getEmail())
-                .roles(new ArrayList<>(user.getRoles()));
+                .role(user.getRole());
 
         OrganisationResponse orgResponse = null;
         if (user.getOrganisationId() != null) {
@@ -57,5 +60,13 @@ public class UserService {
         }
 
         return builder.build();
+    }
+
+    public List<UserResponse> getMembersByOrganisationId(String organisationId) {
+        List<User> users = userRepository.findByOrganisationId(organisationId);
+        return users.stream()
+                .filter(user -> user instanceof Member)
+                .map(this::convertToUserResponse)
+                .collect(Collectors.toList());
     }
 }

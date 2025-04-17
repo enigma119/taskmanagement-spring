@@ -1,7 +1,6 @@
 package com.task.taskmanagement.dto.response;
 
-import java.util.List;
-
+import com.fasterxml.jackson.annotation.JsonInclude;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
@@ -16,8 +15,10 @@ public class UserResponse {
     private String username;
     private String name;
     private String email;
-    private List<String> roles;
+    private String role;
     private String userType;
     private Integer score;
+    
+    @JsonInclude(JsonInclude.Include.NON_NULL)
     private OrganisationResponse organisation;
 }
