@@ -52,7 +52,7 @@ public class AuthController {
         SecurityContextHolder.getContext().setAuthentication(authentication);
         String jwt = jwtTokenProvider.generateToken(authentication);
         
-        org.springframework.security.core.userdetails.UserDetails userDetails = 
+        org.springframework.security.core.userdetails.UserDetails userDetails =
                 (org.springframework.security.core.userdetails.UserDetails) authentication.getPrincipal();
         
         List<String> roles = userDetails.getAuthorities().stream()
@@ -61,13 +61,14 @@ public class AuthController {
         
         User user = userRepository.findByUsername(userDetails.getUsername()).orElseThrow();
 
-        return ResponseEntity.ok(new JwtResponse(
-                jwt,
-                "Bearer",
-                user.getId(),
-                user.getUsername(),
-                user.getEmail(),
-                roles));
+        return ResponseEntity.ok(JwtResponse.builder()
+                .accessToken(jwt)
+                .tokenType("Bearer")
+                .id(user.getId())
+                .username(user.getUsername())
+                .email(user.getEmail())
+                .roles(roles)
+                .build());
     }
 
     @PostMapping("/signup")
@@ -84,7 +85,7 @@ public class AuthController {
                     .body(new MessageResponse("Erreur: L'email est déjà utilisé!"));
         }
 
-        Organisation organisation = organisationRepository.findById(signUpRequest.getOrganizationId())
+        Organisation organisation = organisationRepository.findById(signUpRequest.getOrganizationId().toString())
                 .orElseThrow(() -> new RuntimeException("Organisation non trouvée"));
 
         Set<String> strRoles = signUpRequest.getRoles();
@@ -113,7 +114,7 @@ public class AuthController {
                     .password(encodedPassword)
                     .name(signUpRequest.getName())
                     .email(signUpRequest.getEmail())
-                    .organisation(organisation)
+                    .organisationId(organisation.getId())
                     .roles(roles)
                     .build();
             
@@ -124,7 +125,7 @@ public class AuthController {
                     .password(encodedPassword)
                     .name(signUpRequest.getName())
                     .email(signUpRequest.getEmail())
-                    .organisation(organisation)
+                    .organisationId(organisation.getId())
                     .roles(roles)
                     .score(0)
                     .build();
@@ -136,7 +137,7 @@ public class AuthController {
                     .password(encodedPassword)
                     .name(signUpRequest.getName())
                     .email(signUpRequest.getEmail())
-                    .organisation(organisation)
+                    .organisationId(organisation.getId())
                     .roles(roles)
                     .score(0)
                     .build();
@@ -145,9 +146,6 @@ public class AuthController {
         }
 
         userRepository.save(user);
-        organisation.addUser(user);
-        organisationRepository.save(organisation);
-
         return ResponseEntity.ok(new MessageResponse("Utilisateur enregistré avec succès!"));
     }
 }

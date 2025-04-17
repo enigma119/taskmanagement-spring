@@ -16,6 +16,12 @@ public class TaskMappingService {
     @Autowired
     private UserService userService;
     
+    @Autowired
+    private TaskService taskService;
+    
+    @Autowired
+    private OrganisationService organisationService;
+
     public TaskResponse convertToTaskResponse(Task task) {
         TaskResponse.TaskResponseBuilder builder = TaskResponse.builder()
                 .id(task.getId())
@@ -27,48 +33,31 @@ public class TaskMappingService {
                 .progress(task.getProgress())
                 .score(task.getScore());
         
-        if (task.getAssignedMember() != null) {
-            builder.assignedMember(userService.convertToUserResponse(task.getAssignedMember()));
+        if (task.getAssignedMemberId() != null) {
+            builder.assignedMember(userService.getMemberById(task.getAssignedMemberId()));
         }
         
-        if (task.getOrganisation() != null) {
-            OrganisationResponse orgResponse = OrganisationResponse.builder()
-                    .id(task.getOrganisation().getId())
-                    .name(task.getOrganisation().getName())
-                    .build();
+        if (task.getOrganisationId() != null) {
+            OrganisationResponse orgResponse = organisationService.getOrganisationInfo(task.getOrganisationId());
             builder.organisation(orgResponse);
         }
         
-        if (task.getParentTask() != null) {
-            builder.parentTaskId(task.getParentTask().getId());
+        if (task.getParentTaskId() != null) {
+            builder.parentTaskId(task.getParentTaskId());
         }
         
-        List<ToolResponse> toolResponses = task.getTools().stream()
-                .map(tool -> {
+        List<ToolResponse> toolResponses = task.getToolIds().stream()
+                .map(toolId -> {
                     ToolResponse toolResponse = new ToolResponse();
-                    toolResponse.setId(tool.getId());
-                    toolResponse.setName(tool.getName());
-                    toolResponse.setAvailable(tool.isAvailable());
+                    toolResponse.setId(toolId);
                     return toolResponse;
                 })
                 .collect(Collectors.toList());
         builder.tools(toolResponses);
         
-        // Récursivité contrôlée pour les sous-tâches (un niveau seulement)
-        if (!task.getSubTasks().isEmpty()) {
-            List<TaskResponse> subTaskDTOs = task.getSubTasks().stream()
-                    .map(subTask -> {
-                        return TaskResponse.builder()
-                                .id(subTask.getId())
-                                .description(subTask.getDescription())
-                                .type(subTask.getType())
-                                .category(subTask.getCategory())
-                                .status(subTask.getStatus())
-                                .progress(subTask.calculateProgress())
-                                .score(subTask.getScore())
-                                .parentTaskId(task.getId())
-                                .build();
-                    })
+        if (!task.getSubTaskIds().isEmpty()) {
+            List<TaskResponse> subTaskDTOs = task.getSubTaskIds().stream()
+                    .map(subTaskId -> convertToTaskResponse(taskService.getTaskById(subTaskId)))
                     .collect(Collectors.toList());
             builder.subTasks(subTaskDTOs);
         }

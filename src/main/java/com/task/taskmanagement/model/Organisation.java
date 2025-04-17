@@ -5,8 +5,8 @@ import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 import org.springframework.data.annotation.Id;
-import org.springframework.data.mongodb.core.mapping.DBRef;
 import org.springframework.data.mongodb.core.mapping.Document;
+import org.springframework.data.mongodb.core.mapping.Field;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -22,31 +22,28 @@ public class Organisation {
     
     private String name;
     
-    @DBRef
+    @Field("user_ids")
     @Builder.Default
-    private List<User> users = new ArrayList<>();
+    private List<String> userIds = new ArrayList<>();
     
-    @DBRef
+    @Field("tool_ids")
     @Builder.Default
-    private List<Tool> tools = new ArrayList<>();
+    private List<String> toolIds = new ArrayList<>();
     
-    @DBRef
+    @Field("task_ids")
     @Builder.Default
-    private List<Task> tasks = new ArrayList<>();
+    private List<String> taskIds = new ArrayList<>();
 
-    public void addUser(User user) {
-        users.add(user);
-        user.setOrganisation(this);
+    public void addUserId(String userId) {
+        userIds.add(userId);
     }
     
-    public void addTool(Tool tool) {
-        tools.add(tool);
-        tool.setOrganisation(this);
+    public void addToolId(String toolId) {
+        toolIds.add(toolId);
     }
 
-    public void addTask(Task task) {
-        tasks.add(task);
-        task.setOrganisation(this);
+    public void addTaskId(String taskId) {
+        taskIds.add(taskId);
     }
 
     public int getMemberCount() {

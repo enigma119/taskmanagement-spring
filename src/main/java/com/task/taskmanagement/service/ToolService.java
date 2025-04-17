@@ -19,6 +19,9 @@ public class ToolService {
     @Autowired
     private ToolRepository toolRepository;
 
+    @Autowired
+    private OrganisationService organisationService;
+
     public ToolResponse convertToToolResponse(Tool tool) {
         ToolResponse.ToolResponseBuilder builder = ToolResponse.builder()
                 .id(tool.getId())
@@ -26,11 +29,8 @@ public class ToolService {
                 .available(tool.isAvailable());
 
         OrganisationResponse orgResponse = null;
-        if (tool.getOrganisation() != null) {
-            orgResponse = OrganisationResponse.builder()
-                    .id(tool.getOrganisation().getId())
-                    .name(tool.getOrganisation().getName())
-                    .build();
+        if (tool.getOrganisationId() != null) {
+            orgResponse = organisationService.getOrganisationInfo(tool.getOrganisationId());
         }
 
         builder.organisation(orgResponse);

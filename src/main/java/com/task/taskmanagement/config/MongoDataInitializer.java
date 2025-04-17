@@ -32,11 +32,11 @@ public class MongoDataInitializer {
             // Création des organisations
             Organisation organisation1 = new Organisation();
             organisation1.setName("Association Verte");
-            organisationRepository.save(organisation1);
+            organisation1 = organisationRepository.save(organisation1);
 
             Organisation organisation2 = new Organisation();
             organisation2.setName("Recyclage Montréal");
-            organisationRepository.save(organisation2);
+            organisation2 = organisationRepository.save(organisation2);
 
             // Rôles admin et membres
             Set<String> adminRoles = new HashSet<>();
@@ -51,20 +51,20 @@ public class MongoDataInitializer {
                     .password(passwordEncoder.encode("Password123"))
                     .name("Abass SARR")
                     .email("abass.sarr@gmail.com")
-                    .organisation(organisation1)
+                    .organisationId(organisation1.getId())
                     .roles(adminRoles)
                     .build();
-            userRepository.save(admin1);
+            admin1 = (Admin) userRepository.save(admin1);
 
             Admin admin2 = Admin.builder()
                     .username("admin2")
                     .password(passwordEncoder.encode("Password123"))
                     .name("Abdou Karime Diop")
                     .email("abdou.diop@gmail.com")
-                    .organisation(organisation2)
+                    .organisationId(organisation2.getId())
                     .roles(adminRoles)
                     .build();
-            userRepository.save(admin2);
+            admin2 = (Admin) userRepository.save(admin2);
 
             // Création des membres
             Employee employee1 = Employee.builder()
@@ -72,37 +72,37 @@ public class MongoDataInitializer {
                     .password(passwordEncoder.encode("Password123"))
                     .name("Mayer Paul")
                     .email("mayer.paul@gmail.com")
-                    .organisation(organisation1)
+                    .organisationId(organisation1.getId())
                     .roles(memberRoles)
                     .score(0)
                     .build();
-            userRepository.save(employee1);
+            employee1 = (Employee) userRepository.save(employee1);
 
             Volunteer volunteer1 = Volunteer.builder()
                     .username("volunteer1")
                     .password(passwordEncoder.encode("Password123"))
                     .name("Jane Doe")
                     .email("jane.doe@gmail.com")
-                    .organisation(organisation1)
+                    .organisationId(organisation1.getId())
                     .roles(memberRoles)
                     .score(0)
                     .build();
-            userRepository.save(volunteer1);
+            volunteer1 = (Volunteer) userRepository.save(volunteer1);
 
             // Création des outils
             Tool tool1 = ElectricTool.builder()
                     .name("Marteau électrique")
                     .available(true)
-                    .organisation(organisation1)
+                    .organisationId(organisation1.getId())
                     .build();
-            toolRepository.save(tool1);
+            tool1 = toolRepository.save(tool1);
 
             Tool tool2 = MechanicalTool.builder()
                     .name("Scie à chaîne")
                     .available(true)
-                    .organisation(organisation1)
+                    .organisationId(organisation1.getId())
                     .build();
-            toolRepository.save(tool2);
+            tool2 = toolRepository.save(tool2);
 
             // Création des tâches avec les nouveaux types
             SitePreparationTask task1 = new SitePreparationTask();
@@ -110,10 +110,10 @@ public class MongoDataInitializer {
             task1.setCategory(TaskCategory.BASIC);
             task1.setStatus(TaskStatus.PLANNED);
             task1.setComment("Arroser les plantes et les arbres du parc");
-            task1.setAssignedMember(employee1);
-            task1.setOrganisation(organisation1);
+            task1.setAssignedMemberId(employee1.getId());
+            task1.setOrganisationId(organisation1.getId());
             task1.addTool(tool1);
-            taskRepository.save(task1);
+            task1 = (SitePreparationTask) taskRepository.save(task1);
 
             // Ajout de sous-tâches
             Task subTask1 = new Task();
@@ -121,25 +121,20 @@ public class MongoDataInitializer {
             subTask1.setType(TaskType.SITE_PREPARATION);
             subTask1.setCategory(TaskCategory.BASIC);
             subTask1.setStatus(TaskStatus.PLANNED);
-            subTask1.setParentTask(task1);
-            subTask1.setAssignedMember(employee1);
-            subTask1.setOrganisation(organisation1);
-            taskRepository.save(subTask1);
+            subTask1.setParentTaskId(task1.getId());
+            subTask1.setAssignedMemberId(employee1.getId());
+            subTask1.setOrganisationId(organisation1.getId());
+            subTask1 = taskRepository.save(subTask1);
 
             Task subTask2 = new Task();
             subTask2.setDescription("Marquage du terrain");
             subTask2.setType(TaskType.SITE_PREPARATION);
             subTask2.setCategory(TaskCategory.BASIC);
             subTask2.setStatus(TaskStatus.PLANNED);
-            subTask2.setParentTask(task1);
-            subTask2.setAssignedMember(employee1);
-            subTask2.setOrganisation(organisation1);
-            taskRepository.save(subTask2);
-
-            // Mise à jour de la tâche principale avec ses sous-tâches
-            task1.getSubTasks().add(subTask1);
-            task1.getSubTasks().add(subTask2);
-            taskRepository.save(task1);
+            subTask2.setParentTaskId(task1.getId());
+            subTask2.setAssignedMemberId(employee1.getId());
+            subTask2.setOrganisationId(organisation1.getId());
+            subTask2 = taskRepository.save(subTask2);
 
             // Création d'autres tâches principales
             FoundationTask task2 = new FoundationTask();
@@ -147,8 +142,8 @@ public class MongoDataInitializer {
             task2.setCategory(TaskCategory.PROFESSIONAL);
             task2.setStatus(TaskStatus.PLANNED);
             task2.setComment("Construire les fondations");
-            task2.setAssignedMember(volunteer1);
-            task2.setOrganisation(organisation1);
+            task2.setAssignedMemberId(volunteer1.getId());
+            task2.setOrganisationId(organisation1.getId());
             task2.addTool(tool2);
             taskRepository.save(task2);
         };

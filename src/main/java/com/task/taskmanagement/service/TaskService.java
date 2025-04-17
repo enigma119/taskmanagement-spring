@@ -23,7 +23,7 @@ public class TaskService {
     private final ToolRepository toolRepository;
     
     @Autowired
-    public TaskService(TaskRepository taskRepository, 
+    public TaskService(TaskRepository taskRepository,
                       TaskSequenceService taskSequenceService,
                       MemberRepository memberRepository,
                       ToolRepository toolRepository) {
@@ -59,15 +59,16 @@ public class TaskService {
         Task updatedTask = taskRepository.save(task);
         
         // Si la tâche est terminée et était une tâche principale, créer la tâche suivante
-        if (newStatus == TaskStatus.DONE && oldStatus != TaskStatus.DONE && task.getParentTask() == null) {
+        if (newStatus == TaskStatus.DONE && oldStatus != TaskStatus.DONE && task.getParentTaskId() == null) {
             Task nextTask = taskSequenceService.createNextTaskInSequence(task);
             if (nextTask != null) {
-                nextTask.setAssignedMember(task.getAssignedMember());
+                nextTask.setAssignedMemberId(task.getAssignedMemberId());
                 taskRepository.save(nextTask);
                 
                 // Mettre à jour le score du membre
-                Member member = task.getAssignedMember();
-                if (member != null) {
+                if (task.getAssignedMemberId() != null) {
+                    Member member = memberRepository.findById(task.getAssignedMemberId())
+                        .orElseThrow(() -> new ResourceNotFoundException("Membre non trouvé"));
                     member.setScore(member.getScore() + task.calculateTotalScore());
                     memberRepository.save(member);
                 }
@@ -81,13 +82,13 @@ public class TaskService {
     public Task addSubTask(String parentTaskId, Task subTask) {
         Task parentTask = getTaskById(parentTaskId);
         
-        subTask.setParentTask(parentTask);
-        subTask.setOrganisation(parentTask.getOrganisation());
+        subTask.setParentTaskId(parentTaskId);
+        subTask.setOrganisationId(parentTask.getOrganisationId());
         subTask.setCategory(parentTask.getCategory());
         
         Task savedSubTask = taskRepository.save(subTask);
         
-        parentTask.addSubTask(savedSubTask);
+        parentTask.addSubTaskId(savedSubTask.getId());
         taskRepository.save(parentTask);
         
         return savedSubTask;
@@ -102,7 +103,8 @@ public class TaskService {
             throw new IllegalStateException("Cet outil n'est pas disponible");
         }
         
-        task.addTool(tool);
+        task.addToolId(toolId);
+        tool.getUsedInTaskIds().add(taskId);
         tool.setAvailable(false);
         
         toolRepository.save(tool);

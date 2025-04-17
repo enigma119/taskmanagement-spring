@@ -13,6 +13,6 @@ public interface ToolRepository extends MongoRepository<Tool, String> {
     
     List<Tool> findByAvailable(boolean available);
     
-    @Query("{ 'organisation._id' : ?0, 'available' : ?1 }")
+    @Query("{ 'organisationId' : ?0, 'available' : ?1 }")
     List<Tool> findByOrganisationIdAndAvailable(String organisationId, boolean available);
 }

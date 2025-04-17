@@ -8,8 +8,8 @@ import lombok.experimental.SuperBuilder;
 import lombok.NoArgsConstructor;
 import lombok.Getter;
 import lombok.Setter;
-import org.springframework.data.mongodb.core.mapping.DBRef;
 import org.springframework.data.mongodb.core.mapping.Document;
+import org.springframework.data.mongodb.core.mapping.Field;
 
 @Document(collection = "users")
 @Getter
@@ -20,6 +20,6 @@ public class Member extends User {
 
     private Integer score = 0;
     
-    @DBRef
-    private List<Task> tasks = new ArrayList<>();
+    @Field("task_ids")
+    private List<String> taskIds = new ArrayList<>();
 }

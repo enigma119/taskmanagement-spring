@@ -53,7 +53,10 @@ public class MemberService {
 
     public List<Task> getMemberTasks(Authentication authentication) {
         Member member = getCurrentMember(authentication);
-        return taskRepository.findByAssignedMemberId(member.getId());
+        return member.getTaskIds().stream()
+                .map(taskId -> taskRepository.findById(taskId)
+                        .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Tâche non trouvée")))
+                .collect(Collectors.toList());
     }
 
     public Task addToolToTask(Authentication authentication, String taskId, String toolId) {
@@ -73,12 +76,12 @@ public class MemberService {
         Member member = getCurrentMember(authentication);
         Task task = validateTaskOwner(taskId, member);
         
-        return task.getTools().stream()
-                .map(tool -> {
+        return task.getToolIds().stream()
+                .map(toolId -> {
                     ToolResponse response = new ToolResponse();
-                    response.setId(tool.getId());
-                    response.setName(tool.getName());
-                    response.setAvailable(tool.isAvailable());
+                    response.setId(toolId);
+                    response.setName(toolId);
+                    response.setAvailable(true);
                     // Autres propriétés de l'outil
                     return response;
                 })
@@ -123,7 +126,7 @@ public class MemberService {
         subTask.setType(parentTask.getType());
         subTask.setCategory(parentTask.getCategory());
         subTask.setStatus(TaskStatus.PLANNED);
-        subTask.setAssignedMember(member);
+        subTask.setAssignedMemberId(member.getId());
         
         return taskService.addSubTask(taskId, subTask);
     }
@@ -132,14 +135,17 @@ public class MemberService {
         Member member = getCurrentMember(authentication);
         Task task = validateTaskOwner(taskId, member);
         
-        return taskRepository.findByParentTaskId(taskId);
+        return task.getSubTaskIds().stream()
+                .map(subTaskId -> taskRepository.findById(subTaskId)
+                        .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Sous-tâche non trouvée")))
+                .collect(Collectors.toList());
     }
 
     private Task validateTaskOwner(String taskId, Member member) {
         Task task = taskRepository.findById(taskId)
                 .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Tâche non trouvée"));
 
-        if (task.getAssignedMember() == null || !task.getAssignedMember().getId().equals(member.getId())) {
+        if (task.getAssignedMemberId() == null || !task.getAssignedMemberId().equals(member.getId())) {
             throw new ResponseStatusException(HttpStatus.FORBIDDEN, "Cette tâche ne vous est pas assignée");
         }
 

@@ -5,8 +5,8 @@ import lombok.Data;
 import lombok.NoArgsConstructor;
 import lombok.experimental.SuperBuilder;
 import org.springframework.data.annotation.Id;
-import org.springframework.data.mongodb.core.mapping.DBRef;
 import org.springframework.data.mongodb.core.mapping.Document;
+import org.springframework.data.mongodb.core.mapping.Field;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -23,9 +23,11 @@ public abstract class Tool {
     private String name;
     private boolean available = true;
 
-    @DBRef
-    private Organisation organisation;
+    @Field("organisation_id")
+    private String organisationId;
 
-    @DBRef
-    private List<Task> usedInTasks = new ArrayList<>();
+    @Field("used_in_task_ids")
+    private List<String> usedInTaskIds = new ArrayList<>();
+
+    public abstract String getType();
 }

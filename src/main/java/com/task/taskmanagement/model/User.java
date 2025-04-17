@@ -5,8 +5,8 @@ import lombok.Data;
 import lombok.NoArgsConstructor;
 import lombok.experimental.SuperBuilder;
 import org.springframework.data.annotation.Id;
-import org.springframework.data.mongodb.core.mapping.DBRef;
 import org.springframework.data.mongodb.core.mapping.Document;
+import org.springframework.data.mongodb.core.mapping.Field;
 
 import java.util.HashSet;
 import java.util.Set;
@@ -25,8 +25,8 @@ public abstract class User {
     private String email;
     private String name;
 
-    @DBRef
-    private Organisation organisation;
+    @Field("organisation_id")
+    private String organisationId;
 
     private Set<String> roles = new HashSet<>();
 }

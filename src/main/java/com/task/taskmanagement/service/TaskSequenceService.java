@@ -20,7 +20,7 @@ public class TaskSequenceService {
     }
     
     public Task createNextTaskInSequence(Task completedTask) {
-        if (completedTask.getStatus() != TaskStatus.DONE || completedTask.getParentTask() != null) {
+        if (completedTask.getStatus() != TaskStatus.DONE || completedTask.getParentTaskId() != null) {
             return null;
         }
         
@@ -30,7 +30,7 @@ public class TaskSequenceService {
         }
         
         Task nextTask = createTaskByType(nextType, completedTask.getCategory());
-        nextTask.setOrganisation(completedTask.getOrganisation());
+        nextTask.setOrganisationId(completedTask.getOrganisationId());
         nextTask.setStatus(TaskStatus.PLANNED);
         
         return taskRepository.save(nextTask);

@@ -2,6 +2,7 @@ package com.task.taskmanagement.controller;
 
 import com.task.taskmanagement.dto.request.OrganisationRequest;
 import com.task.taskmanagement.dto.request.SubTaskRequest;
+import com.task.taskmanagement.dto.request.CommentRequest;
 import com.task.taskmanagement.dto.response.OrganisationResponse;
 import com.task.taskmanagement.dto.response.TaskResponse;
 import com.task.taskmanagement.dto.response.ToolResponse;
@@ -133,7 +134,7 @@ public class AdminController {
         // return ResponseEntity.ok
 
     // Lister les outils disponibles d'une organisation
-    @GetMapping("/organization/{id}/tools/available")
+    @GetMapping("/organisation/{id}/tools/available")
     public ResponseEntity<List<ToolResponse>> getAvailableTools(@PathVariable String id) {
         return ResponseEntity.ok(toolService.getAvailableTools(id));
     }
@@ -160,8 +161,8 @@ public class AdminController {
     @PutMapping("/task/{id}/comment")
     public ResponseEntity<TaskResponse> addCommentToTask(
             @PathVariable String id,
-            @RequestBody String comment) {
-        Task updatedTask = taskService.addCommentToTask(id, comment);
+            @Valid @RequestBody CommentRequest request) {
+        Task updatedTask = taskService.addCommentToTask(id, request.getComment());
         return ResponseEntity.ok(taskMappingService.convertToTaskResponse(updatedTask));
     }
 }

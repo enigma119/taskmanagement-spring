@@ -15,7 +15,7 @@ import java.util.ArrayList;
 @RequiredArgsConstructor
 public class UserService {
     private final UserRepository userRepository;
-
+    private final OrganisationService organisationService;
     public UserResponse getMemberById(String id) {
         if (id == null) {
             throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "L'ID du membre ne peut pas être null");
@@ -36,11 +36,8 @@ public class UserService {
                 .roles(new ArrayList<>(user.getRoles()));
 
         OrganisationResponse orgResponse = null;
-        if (user.getOrganisation() != null) {
-            orgResponse = OrganisationResponse.builder()
-                    .id(user.getOrganisation().getId())
-                    .name(user.getOrganisation().getName())
-                    .build();
+        if (user.getOrganisationId() != null) {
+            orgResponse = organisationService.getOrganisationInfo(user.getOrganisationId());
         }
 
         builder.organisation(orgResponse);

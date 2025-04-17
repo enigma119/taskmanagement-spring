@@ -18,6 +18,6 @@ public interface TaskRepository extends MongoRepository<Task, String> {
     
     List<Task> findByParentTaskId(String parentTaskId);
     
-    @Query("{ 'parentTask' : null, 'organisation._id' : ?0 }")
+    @Query("{ 'parentTaskId' : null, 'organisationId' : ?0 }")
     List<Task> findRootTasksByOrganisationId(String organisationId);
 }
