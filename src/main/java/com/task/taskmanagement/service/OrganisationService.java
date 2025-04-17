@@ -29,7 +29,7 @@ public class OrganisationService {
                 .build();
     }
 
-    public OrganisationResponse getOrganisationInfo(Long id) {
+    public OrganisationResponse getOrganisationInfo(String id) {
         Organisation organisation = organisationRepository.findById(id)
                 .orElseThrow(() -> new RuntimeException("Organisation non trouvée"));
 

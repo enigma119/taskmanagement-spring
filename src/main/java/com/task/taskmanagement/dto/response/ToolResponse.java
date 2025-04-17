@@ -10,10 +10,9 @@ import lombok.NoArgsConstructor;
 @NoArgsConstructor
 @AllArgsConstructor
 public class ToolResponse {
-    private Long id;
+    private String id;
     private String name;
+    private String type;
     private boolean available;
-    private String toolType;
     private OrganisationResponse organisation;
-
 }

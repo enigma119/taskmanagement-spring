@@ -1,0 +1,11 @@
+package com.task.taskmanagement.model.enums;
+
+public enum TaskType {
+    SITE_PREPARATION,
+    FOUNDATION,
+    STRUCTURE_CONSTRUCTION,
+    PARTITION_AND_ROOFING,
+    TECHNICAL_INSTALLATION,
+    FINISHING_AND_SECURITY,
+    CLEANING_AND_INSPECTION
+}

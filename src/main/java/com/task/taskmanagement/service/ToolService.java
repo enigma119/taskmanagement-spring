@@ -36,21 +36,21 @@ public class ToolService {
         builder.organisation(orgResponse);
 
         if (tool instanceof ElectricTool) {
-            builder.toolType("Electric");
+            builder.type("Electric");
         } else if (tool instanceof MechanicalTool) {
-            builder.toolType("Mechanical");
+            builder.type("Mechanical");
         }
 
         return builder.build();
     }
 
-    public ToolResponse getToolById(Long toolId) {
+    public ToolResponse getToolById(String toolId) {
         Tool tool = toolRepository.findById(toolId)
                 .orElseThrow(() -> new RuntimeException("Outil introuvable avec l'ID : " + toolId));
         return convertToToolResponse(tool);
     }
 
-    public List<ToolResponse> getAvailableTools(Long organisationId) {
+    public List<ToolResponse> getAvailableTools(String organisationId) {
         List<Tool> tools = toolRepository.findByOrganisationIdAndAvailable(organisationId, true);
         List<ToolResponse> toolResponses = tools.stream()
                 .map(this::convertToToolResponse)

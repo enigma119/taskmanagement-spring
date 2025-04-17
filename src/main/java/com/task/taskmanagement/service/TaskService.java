@@ -1,74 +1,124 @@
 package com.task.taskmanagement.service;
 
-import java.util.List;
-import java.util.stream.Collectors;
-
+import com.task.taskmanagement.exception.ResourceNotFoundException;
+import com.task.taskmanagement.model.Member;
+import com.task.taskmanagement.model.Task;
+import com.task.taskmanagement.model.Tool;
+import com.task.taskmanagement.model.enums.TaskStatus;
+import com.task.taskmanagement.repository.MemberRepository;
+import com.task.taskmanagement.repository.TaskRepository;
+import com.task.taskmanagement.repository.ToolRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
-import com.task.taskmanagement.dto.response.OrganisationResponse;
-import com.task.taskmanagement.dto.response.TaskResponse;
-import com.task.taskmanagement.dto.response.ToolResponse;
-import com.task.taskmanagement.dto.response.UserResponse;
-import com.task.taskmanagement.model.Task;
-import com.task.taskmanagement.repository.TaskRepository;
+import java.util.List;
 
 @Service
 public class TaskService {
 
+    private final TaskRepository taskRepository;
+    private final TaskSequenceService taskSequenceService;
+    private final MemberRepository memberRepository;
+    private final ToolRepository toolRepository;
+    
     @Autowired
-    private TaskRepository taskRepository;
-
-    private final UserService userService;
-    private final ToolService toolService;
-
-    public TaskService(UserService userService, ToolService toolService) {
-        this.userService = userService;
-        this.toolService = toolService;
+    public TaskService(TaskRepository taskRepository, 
+                      TaskSequenceService taskSequenceService,
+                      MemberRepository memberRepository,
+                      ToolRepository toolRepository) {
+        this.taskRepository = taskRepository;
+        this.taskSequenceService = taskSequenceService;
+        this.memberRepository = memberRepository;
+        this.toolRepository = toolRepository;
     }
-
-    public TaskResponse convertToTaskResponse(Task task) {
-        UserResponse assignedMemberResponse = null;
-        if (task.getAssignedMember() != null) {
-            assignedMemberResponse = userService.convertToUserResponse(task.getAssignedMember());
+    
+    public Task getTaskById(String id) {
+        return taskRepository.findById(id)
+            .orElseThrow(() -> new ResourceNotFoundException("Tâche non trouvée avec l'ID: " + id));
+    }
+    
+    public List<Task> getTasksByOrganisationId(String organisationId) {
+        return taskRepository.findByOrganisationId(organisationId);
+    }
+    
+    public List<Task> getRootTasksByOrganisationId(String organisationId) {
+        return taskRepository.findRootTasksByOrganisationId(organisationId);
+    }
+    
+    public List<Task> getSubTasks(String parentTaskId) {
+        return taskRepository.findByParentTaskId(parentTaskId);
+    }
+    
+    @Transactional
+    public Task updateTaskStatus(String taskId, TaskStatus newStatus) {
+        Task task = getTaskById(taskId);
+        TaskStatus oldStatus = task.getStatus();
+        
+        task.updateStatus(newStatus);
+        Task updatedTask = taskRepository.save(task);
+        
+        // Si la tâche est terminée et était une tâche principale, créer la tâche suivante
+        if (newStatus == TaskStatus.DONE && oldStatus != TaskStatus.DONE && task.getParentTask() == null) {
+            Task nextTask = taskSequenceService.createNextTaskInSequence(task);
+            if (nextTask != null) {
+                nextTask.setAssignedMember(task.getAssignedMember());
+                taskRepository.save(nextTask);
+                
+                // Mettre à jour le score du membre
+                Member member = task.getAssignedMember();
+                if (member != null) {
+                    member.setScore(member.getScore() + task.calculateTotalScore());
+                    memberRepository.save(member);
+                }
+            }
         }
-
-        OrganisationResponse orgResponse = null;
-        if (task.getOrganisation() != null) {
-            orgResponse = OrganisationResponse.builder()
-                    .id(task.getOrganisation().getId())
-                    .name(task.getOrganisation().getName())
-                    .build();
+        
+        return updatedTask;
+    }
+    
+    @Transactional
+    public Task addSubTask(String parentTaskId, Task subTask) {
+        Task parentTask = getTaskById(parentTaskId);
+        
+        subTask.setParentTask(parentTask);
+        subTask.setOrganisation(parentTask.getOrganisation());
+        subTask.setCategory(parentTask.getCategory());
+        
+        Task savedSubTask = taskRepository.save(subTask);
+        
+        parentTask.addSubTask(savedSubTask);
+        taskRepository.save(parentTask);
+        
+        return savedSubTask;
+    }
+    
+    @Transactional
+    public Task addToolToTask(String taskId, String toolId) {
+        Task task = getTaskById(taskId);
+        Tool tool = toolRepository.findById(toolId)
+            .orElseThrow(() -> new ResourceNotFoundException("Outil non trouvé avec l'ID: " + toolId));
+        if (!tool.isAvailable()) {
+            throw new IllegalStateException("Cet outil n'est pas disponible");
         }
-
-        List<ToolResponse> toolResponses = task.getTools().stream()
-                .map(toolService::convertToToolResponse)
-                .collect(Collectors.toList());
-
-        return TaskResponse.builder()
-                .id(task.getId())
-                .description(task.getDescription())
-                .type(task.getType())
-                .status(task.getStatus())
-                .comment(task.getComment())
-                .assignedMember(assignedMemberResponse)
-                .organisation(orgResponse)
-                .usedTools(toolResponses)
-                .build();
+        
+        task.addTool(tool);
+        tool.setAvailable(false);
+        
+        toolRepository.save(tool);
+        return taskRepository.save(task);
     }
-
-    public List<TaskResponse> getTasksByOrganisationId(Long organisationId) {
-        List<Task> tasks = taskRepository.findByOrganisationId(organisationId);
-        List<TaskResponse> taskResponses = tasks.stream()
-                .map(this::convertToTaskResponse)
-                .collect(Collectors.toList());
-        return taskResponses;
+    
+    @Transactional
+    public Task addCommentToTask(String taskId, String comment) {
+        Task task = getTaskById(taskId);
+        
+        if (task.getComment() == null || task.getComment().isEmpty()) {
+            task.setComment(comment);
+        } else {
+            task.setComment(task.getComment() + "\n" + comment);
+        }
+        
+        return taskRepository.save(task);
     }
-
-    public TaskResponse getTaskById(Long taskId) {
-        Task task = taskRepository.findById(taskId)
-                .orElseThrow(() -> new RuntimeException("Tâche introuvable avec l'ID : " + taskId));
-        return convertToTaskResponse(task);
-    }
-
 }

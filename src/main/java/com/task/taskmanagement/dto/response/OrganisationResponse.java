@@ -10,7 +10,7 @@ import lombok.NoArgsConstructor;
 @NoArgsConstructor
 @AllArgsConstructor
 public class OrganisationResponse {
-    private Long id;
+    private String id;
     private String name;
     private int memberCount;
     private int totalScore;

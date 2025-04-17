@@ -16,7 +16,7 @@ import java.util.ArrayList;
 public class UserService {
     private final UserRepository userRepository;
 
-    public UserResponse getMemberById(Long id) {
+    public UserResponse getMemberById(String id) {
         if (id == null) {
             throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "L'ID du membre ne peut pas être null");
         }

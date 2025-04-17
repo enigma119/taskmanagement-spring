@@ -1,95 +1,108 @@
 package com.task.taskmanagement.model;
-
-import com.task.taskmanagement.model.enums.*;
+import com.task.taskmanagement.model.enums.TaskCategory;
+import com.task.taskmanagement.model.enums.TaskStatus;
+import com.task.taskmanagement.model.enums.TaskType;
+import lombok.AllArgsConstructor;
+import lombok.Builder;
+import lombok.Data;
+import lombok.NoArgsConstructor;
+import org.springframework.data.annotation.Id;
+import org.springframework.data.annotation.Transient;
+import org.springframework.data.mongodb.core.mapping.DBRef;
+import org.springframework.data.mongodb.core.mapping.Document;
 
 import java.util.ArrayList;
 import java.util.List;
 
-import jakarta.persistence.*;
-import lombok.Builder;
-import lombok.Data;
-import lombok.NoArgsConstructor;
-import lombok.AllArgsConstructor;
-
-@Entity
+@Document(collection = "tasks")
 @Data
 @NoArgsConstructor
 @AllArgsConstructor
 @Builder
 public class Task {
     @Id
-    @GeneratedValue(strategy = GenerationType.IDENTITY)
-    private Long id;
-
-    @Column(nullable = false)
+    private String id;
+    
     private String description;
-
-    @Enumerated(EnumType.STRING)
-    private TypeTask type;
-
-    @Enumerated(EnumType.STRING)
-    @Builder.Default
-    private TaskStatus status = TaskStatus.PLANNED;
-
-    @Column(columnDefinition = "TEXT")
+    private TaskType type;
+    private TaskCategory category;
+    private TaskStatus status;
     private String comment;
-
-    @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "member_id")
+    private double progress;
+    private int score;
+    
+    @DBRef
     private Member assignedMember;
-
-    @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "organisation_id")
+    
+    @DBRef
     private Organisation organisation;
     
-    @ManyToMany
-    @JoinTable(
-        name = "task_tools",
-        joinColumns = @JoinColumn(name = "task_id"),
-        inverseJoinColumns = @JoinColumn(name = "tool_id")
-    )
-    @Builder.Default
+    @DBRef
+    private Task parentTask;
+    
+    @DBRef
+    private List<Task> subTasks = new ArrayList<>();
+    
+    @DBRef
     private List<Tool> tools = new ArrayList<>();
-
-    public void addTool(Tool tool) {
-        if (tools == null) {
-            tools = new ArrayList<>();
-        }
-        tools.add(tool);
-        
-        if (tool.getUsedInTasks() == null) {
-            tool.setUsedInTasks(new ArrayList<>());
-        }
-        if (!tool.getUsedInTasks().contains(this)) {
-            tool.getUsedInTasks().add(this);
-        }
+    
+    @Transient
+    public boolean isLeaf() {
+        return subTasks.isEmpty();
     }
     
-    public void removeTool(Tool tool) {
-        tools.remove(tool);
-        tool.getUsedInTasks().remove(this);
+    public void addSubTask(Task task) {
+        subTasks.add(task);
+        task.setParentTask(this);
+        recalculateProgress();
     }
     
-    public void addComment(String newComment) {
-        if (this.comment == null || this.comment.isEmpty()) {
-            this.comment = newComment;
+    public int calculateTotalScore() {
+        if (isLeaf()) {
+            return score;
         } else {
-            this.comment = this.comment + "\n" + newComment;
+            return subTasks.stream()
+                    .mapToInt(Task::calculateTotalScore)
+                    .sum();
         }
     }
     
-    public int getPoints() {
-        return type.getPoints();
+    public double calculateProgress() {
+        if (status == TaskStatus.DONE) {
+            return 100.0;
+        }
+        
+        if (isLeaf()) {
+            return status == TaskStatus.IN_PROGRESS ? 50.0 : 0.0;
+        } else {
+            if (subTasks.isEmpty()) return 0.0;
+            return subTasks.stream()
+                    .mapToDouble(Task::calculateProgress)
+                    .average()
+                    .orElse(0.0);
+        }
     }
-
-    public List<Tool> getTools() {
-        return tools;
+    
+    public void updateStatus(TaskStatus newStatus) {
+        this.status = newStatus;
+        
+        if (newStatus == TaskStatus.DONE) {
+            subTasks.forEach(subTask -> subTask.updateStatus(TaskStatus.DONE));
+        }
+        
+        recalculateProgress();
     }
-
-    public void displayInfo() {
-        System.out.println("Task: " + description);
-        System.out.println("Status: " + status);
-        System.out.println("Type: " + type);
-        System.out.println("Comment: " + comment);
+    
+    private void recalculateProgress() {
+        this.progress = calculateProgress();
+        
+        if (parentTask != null) {
+            parentTask.recalculateProgress();
+        }
+    }
+    
+    public void addTool(Tool tool) {
+        tools.add(tool);
+        tool.setAvailable(false);
     }
 }

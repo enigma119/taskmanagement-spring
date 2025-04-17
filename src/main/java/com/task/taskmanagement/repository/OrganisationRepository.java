@@ -1,15 +1,12 @@
 package com.task.taskmanagement.repository;
 
-import com.task.taskmanagement.model.*;
+import com.task.taskmanagement.model.Organisation;
+import org.springframework.data.mongodb.repository.MongoRepository;
+import org.springframework.stereotype.Repository;
 
 import java.util.Optional;
 
-import org.springframework.data.jpa.repository.JpaRepository;
-import org.springframework.stereotype.Repository;
-
-
 @Repository
-public interface OrganisationRepository extends JpaRepository<Organisation, Long> {
+public interface OrganisationRepository extends MongoRepository<Organisation, String> {
     Optional<Organisation> findByName(String name);
-
 }

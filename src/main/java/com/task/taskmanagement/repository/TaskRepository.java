@@ -1,26 +1,23 @@
 package com.task.taskmanagement.repository;
 
-import com.task.taskmanagement.model.*;
+import com.task.taskmanagement.model.Task;
 import com.task.taskmanagement.model.enums.TaskStatus;
+import org.springframework.data.mongodb.repository.MongoRepository;
+import org.springframework.data.mongodb.repository.Query;
+import org.springframework.stereotype.Repository;
 
 import java.util.List;
 
-import org.springframework.data.jpa.repository.JpaRepository;
-import org.springframework.data.jpa.repository.Query;
-import org.springframework.data.repository.query.Param;
-import org.springframework.stereotype.Repository;
-
 @Repository
-public interface TaskRepository extends JpaRepository<Task, Long> {
-    List<Task> findByOrganisationId(Long organisationId);
+public interface TaskRepository extends MongoRepository<Task, String> {
+    List<Task> findByOrganisationId(String organisationId);
     
-    List<Task> findByAssignedMemberId(Long memberId);
+    List<Task> findByAssignedMemberId(String memberId);
     
     List<Task> findByStatus(TaskStatus status);
     
-    @Query("SELECT t FROM Task t WHERE t.organisation.id = :organisationId AND t.status = :status")
-    List<Task> findByOrganisationIdAndStatus(@Param("organisationId") Long organisationId, @Param("status") TaskStatus status);
+    List<Task> findByParentTaskId(String parentTaskId);
     
-    @Query("SELECT t FROM Task t WHERE t.assignedMember.id = :memberId AND t.status = :status")
-    List<Task> findByAssignedMemberIdAndStatus(@Param("memberId") Long memberId, @Param("status") TaskStatus status);
+    @Query("{ 'parentTask' : null, 'organisation._id' : ?0 }")
+    List<Task> findRootTasksByOrganisationId(String organisationId);
 }

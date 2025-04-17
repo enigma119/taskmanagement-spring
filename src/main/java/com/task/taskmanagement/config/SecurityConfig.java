@@ -58,17 +58,15 @@ public class SecurityConfig {
             .csrf(csrf -> csrf.disable())
             .exceptionHandling(exception -> exception.authenticationEntryPoint(unauthorizedHandler))
             .sessionManagement(session -> session.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
-            .authorizeHttpRequests(auth -> 
+            .authorizeHttpRequests(auth ->
                 auth.requestMatchers("/api/auth/**").permitAll()
-                    .requestMatchers("/h2-console/**").permitAll()
+                    .requestMatchers("/api/tasks/**").permitAll() // Pour faciliter les tests
                     .anyRequest().authenticated()
             );
-
-        http.headers(headers -> headers.frameOptions(frame -> frame.disable()));
         
         http.authenticationProvider(authenticationProvider());
         http.addFilterBefore(authenticationJwtTokenFilter(), UsernamePasswordAuthenticationFilter.class);
 
         return http.build();
     }
-} 
+}

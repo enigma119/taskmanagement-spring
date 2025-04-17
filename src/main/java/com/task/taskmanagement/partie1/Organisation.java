@@ -9,6 +9,7 @@ public class Organisation {
     private List<User> users;
     private List<Tool> tools;
     private List<Task> tasks;
+    private int nextTaskId = 1;
 
     public Organisation(String id, String name) {
         this.id = id;
@@ -18,6 +19,7 @@ public class Organisation {
         this.tasks = new ArrayList<>();
     }
 
+    // Getters and existing methods
     public String getId() {
         return id;
     }
@@ -42,7 +44,11 @@ public class Organisation {
         return new ArrayList<>(tasks);
     }
 
-    // Methode d'ajout
+    // Methods
+    public String generateNextTaskId() {
+        return String.valueOf(nextTaskId++);
+    }
+
     public void addUser(User user) {
         users.add(user);
     }
@@ -55,7 +61,51 @@ public class Organisation {
         tasks.add(task);
     }
 
-    // Methode de recherche par id
+    // Méthode pour obtenir les tâches principales (sans parent)
+    public List<Task> getRootTasks() {
+        List<Task> rootTasks = new ArrayList<>();
+        for (Task task : tasks) {
+            if (task.getParentTask() == null) {
+                rootTasks.add(task);
+            }
+        }
+        return rootTasks;
+    }
+
+    // Méthode pour obtenir les tâches par type
+    public List<Task> getTasksByType(TaskType type) {
+        List<Task> filteredTasks = new ArrayList<>();
+        for (Task task : tasks) {
+            if (task.getType() == type) {
+                filteredTasks.add(task);
+            }
+        }
+        return filteredTasks;
+    }
+
+    // Méthode pour calculer le score total
+    public int getTotalScore() {
+        int totalScore = 0;
+        for (User user : users) {
+            if (user instanceof Member) {
+                totalScore += ((Member) user).getScore();
+            }
+        }
+        return totalScore;
+    }
+
+    // Méthode pour calculer le nombre de tâches terminées
+    public int getCompletedTaskCount() {
+        int count = 0;
+        for (Task task : getRootTasks()) {
+            if (task.getStatus() == TaskStatus.DONE) {
+                count++;
+            }
+        }
+        return count;
+    }
+
+    // Lookup methods
     public User getUserById(String id) {
         for (User user : users) {
             if (user.getId().equals(id)) {
@@ -83,7 +133,7 @@ public class Organisation {
         return null;
     }
 
-    // Methode personnalisee
+    // Méthode personnalisée
     public List<Tool> getAvailableTools() {
         List<Tool> availableTools = new ArrayList<>();
         for (Tool tool : tools) {
@@ -105,34 +155,6 @@ public class Organisation {
         return count;
     }
 
-    // calculer le score total des membres
-    public int getTotalScore() {
-        int totalScore = 0;
-        for (User user : users) {
-            if (user instanceof Member) {
-                totalScore += ((Member) user).getScore();
-            }
-        }
-        return totalScore;
-    }
-
-    // Afficher le nombre de tâches
-    public String getTaskCount() {
-        int planedCount = 0;
-        int inProgressCount = 0;
-        int doneCount = 0;
-        for (Task task : tasks) {
-            if (task.getStatus() == TaskStatus.PLANNED) {
-                planedCount++;
-            } else if (task.getStatus() == TaskStatus.IN_PROGRESS) {
-                inProgressCount++;
-            } else if (task.getStatus() == TaskStatus.DONE) {
-                doneCount++;
-            }
-        }
-        return "Planifiées: " + planedCount + ", En cours: " + inProgressCount + ", Terminées: " + doneCount;
-    }
-
     // afficher les infos de l'organisation
     public void displayInfo() {
         System.out.println("\n=== Informations de l'organisation ===");
@@ -140,34 +162,19 @@ public class Organisation {
         System.out.println("Nom: " + name);
         System.out.println("Nombre de membres: " + getMemberCount());
         System.out.println("Score total: " + getTotalScore());
-        System.out.println("Nombre de tâches: " + getTaskCount());
+        System.out.println("Nombre de tâches complétées: " + getCompletedTaskCount());
+        System.out.println("Nombre de tâches en cours: " + getRootTasks().size());
     }
 
     public User findUserById(String userId) {
-        for (User user : users) {
-            if (user.getId().equals(userId)) {
-                return user;
-            }
-        }
-        return null;
+        return getUserById(userId);
     }
 
     public Task findTaskById(String taskId) {
-        for (Task task : tasks) {
-            if (task.getId().equals(taskId)) {
-                return task;
-            }
-        }
-        return null;
+        return getTaskById(taskId);
     }
 
     public Tool findToolById(String toolId) {
-        for (Tool tool : tools) {
-            if (tool.getId().equals(toolId)) {
-                return tool;
-            }
-        }
-        return null;
+        return getToolById(toolId);
     }
-
 }

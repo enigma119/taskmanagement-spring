@@ -41,4 +41,44 @@ public class Admin extends User {
         return organisation.getAvailableTools();
     }
 
+    // Ajouter une sous-tâche à une tâche existante
+    public void addSubTaskToTask(Task parentTask, String description, int estimatedDuration) {
+        if (parentTask == null) {
+            System.out.println("Tâche parente non trouvée.");
+            return;
+        }
+        
+        String newId = organisation.generateNextTaskId();
+        Task subTask = new Task(
+            newId,
+            description,
+            parentTask.getType(),
+            parentTask.isProfessional(),
+            estimatedDuration,
+            TaskStatus.PLANNED
+        );
+        
+        parentTask.addSubTask(subTask);
+        organisation.addTask(subTask);
+        System.out.println("Sous-tâche ajoutée avec succès.");
+    }
+
+    // Voir le progrès d'une tâche
+    public void viewTaskProgress(Task task) {
+        if (task == null) {
+            System.out.println("Tâche non trouvée.");
+            return;
+        }
+
+        System.out.println("\n=== Progrès de la tâche: " + task.getDescription() + " ===");
+        System.out.println("Progrès: " + String.format("%.2f", task.calculateProgress()) + "%");
+        
+        if (!task.getSubTasks().isEmpty()) {
+            System.out.println("\nSous-tâches:");
+            for (Task subTask : task.getSubTasks()) {
+                System.out.println("- " + subTask.getDescription() + ": " 
+                    + String.format("%.2f", subTask.calculateProgress()) + "%");
+            }
+        }
+    }
 }

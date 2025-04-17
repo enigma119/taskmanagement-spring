@@ -1,37 +1,36 @@
 package com.task.taskmanagement.model;
 
-import java.util.ArrayList;
-import java.util.List;
-
-import com.task.taskmanagement.model.enums.TaskStatus;
-
-import jakarta.persistence.*;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
+import org.springframework.data.annotation.Id;
+import org.springframework.data.mongodb.core.mapping.DBRef;
+import org.springframework.data.mongodb.core.mapping.Document;
 
-@Entity
+import java.util.ArrayList;
+import java.util.List;
+
+@Document(collection = "organisations")
 @Data
 @Builder
 @NoArgsConstructor
 @AllArgsConstructor
 public class Organisation {
     @Id
-    @GeneratedValue(strategy = GenerationType.IDENTITY)
-    private Long id;
+    private String id;
     
     private String name;
     
-    @OneToMany(mappedBy = "organisation", cascade = CascadeType.ALL)
+    @DBRef
     @Builder.Default
     private List<User> users = new ArrayList<>();
     
-    @OneToMany(mappedBy = "organisation", cascade = CascadeType.ALL)
+    @DBRef
     @Builder.Default
     private List<Tool> tools = new ArrayList<>();
     
-    @OneToMany(mappedBy = "organisation", cascade = CascadeType.ALL)
+    @DBRef
     @Builder.Default
     private List<Task> tasks = new ArrayList<>();
 
@@ -44,7 +43,6 @@ public class Organisation {
         tools.add(tool);
         tool.setOrganisation(this);
     }
-
 
     public void addTask(Task task) {
         tasks.add(task);
@@ -74,7 +72,7 @@ public class Organisation {
     public int getCompletedTaskCount() {
         int count = 0;
         for (Task task : tasks) {
-            if (task.getStatus() == TaskStatus.DONE) {
+            if (task.getStatus() == com.task.taskmanagement.model.enums.TaskStatus.DONE) {
                 count++;
             }
         }
