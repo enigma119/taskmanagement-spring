@@ -17,7 +17,7 @@ import java.util.Set;
 @AllArgsConstructor
 public class SignupRequest {
     @NotBlank(message = "Le nom d'utilisateur est obligatoire")
-    @Size(min = 3, max = 50, message = "Le nom d'utilisateur doit contenir entre 3 et 50 caractères")
+    @Size(min = 3, max = 20, message = "Le nom d'utilisateur doit contenir entre 3 et 20 caractères")
     private String username;
     
     @NotBlank(message = "Le mot de passe est obligatoire")
@@ -30,13 +30,14 @@ public class SignupRequest {
     
     @NotBlank(message = "L'email est obligatoire")
     @Email(message = "L'email doit être valide")
+    @Size(max = 50, message = "L'email doit contenir au maximum 50 caractères")
     private String email;
     
     @NotNull(message = "L'identifiant de l'organisation est obligatoire")
     private Long organizationId;
     
-    @NotNull(message = "Les rôles sont obligatoires")
-    private Set<String> roles;
+    @NotNull(message = "Le rôle est obligatoire")
+    private String role;
     
     private String memberType;
     // Champs spécifiques pour Volunteer

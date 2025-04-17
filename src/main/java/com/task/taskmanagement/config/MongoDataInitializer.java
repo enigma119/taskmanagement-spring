@@ -9,8 +9,6 @@ import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.security.crypto.password.PasswordEncoder;
 
-import java.util.HashSet;
-import java.util.Set;
 
 @Configuration
 public class MongoDataInitializer {
@@ -38,13 +36,6 @@ public class MongoDataInitializer {
             organisation2.setName("Recyclage Montréal");
             organisation2 = organisationRepository.save(organisation2);
 
-            // Rôles admin et membres
-            Set<String> adminRoles = new HashSet<>();
-            adminRoles.add("ROLE_ADMIN");
-
-            Set<String> memberRoles = new HashSet<>();
-            memberRoles.add("ROLE_MEMBER");
-
             // Création des admins
             Admin admin1 = Admin.builder()
                     .username("admin1")
@@ -52,7 +43,7 @@ public class MongoDataInitializer {
                     .name("Abass SARR")
                     .email("abass.sarr@gmail.com")
                     .organisationId(organisation1.getId())
-                    .roles(adminRoles)
+                    .role("ROLE_ADMIN")
                     .build();
             admin1 = (Admin) userRepository.save(admin1);
 
@@ -62,7 +53,7 @@ public class MongoDataInitializer {
                     .name("Abdou Karime Diop")
                     .email("abdou.diop@gmail.com")
                     .organisationId(organisation2.getId())
-                    .roles(adminRoles)
+                    .role("ROLE_ADMIN")
                     .build();
             admin2 = (Admin) userRepository.save(admin2);
 
@@ -73,7 +64,7 @@ public class MongoDataInitializer {
                     .name("Mayer Paul")
                     .email("mayer.paul@gmail.com")
                     .organisationId(organisation1.getId())
-                    .roles(memberRoles)
+                    .role("ROLE_MEMBER")
                     .score(0)
                     .build();
             employee1 = (Employee) userRepository.save(employee1);
@@ -84,7 +75,7 @@ public class MongoDataInitializer {
                     .name("Jane Doe")
                     .email("jane.doe@gmail.com")
                     .organisationId(organisation1.getId())
-                    .roles(memberRoles)
+                    .role("ROLE_MEMBER")
                     .score(0)
                     .build();
             volunteer1 = (Volunteer) userRepository.save(volunteer1);

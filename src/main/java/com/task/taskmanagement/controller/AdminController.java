@@ -8,16 +8,22 @@ import com.task.taskmanagement.dto.response.TaskResponse;
 import com.task.taskmanagement.dto.response.ToolResponse;
 import com.task.taskmanagement.dto.response.UserResponse;
 import com.task.taskmanagement.model.Task;
+import com.task.taskmanagement.model.User;
 import com.task.taskmanagement.model.enums.TaskStatus;
+import com.task.taskmanagement.repository.UserRepository;
 import com.task.taskmanagement.service.OrganisationService;
 import com.task.taskmanagement.service.TaskMappingService;
 import com.task.taskmanagement.service.TaskService;
 import com.task.taskmanagement.service.ToolService;
 import com.task.taskmanagement.service.UserService;
+import com.task.taskmanagement.security.RequestUtils;
+import jakarta.servlet.http.HttpServletRequest;
 
 import java.util.List;
 import java.util.stream.Collectors;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
@@ -30,6 +36,7 @@ import jakarta.validation.Valid;
 @RequestMapping("/api/admin")
 @PreAuthorize("hasRole('ROLE_ADMIN')")
 public class AdminController {
+    private static final Logger logger = LoggerFactory.getLogger(AdminController.class);
 
     @Autowired
     private OrganisationService organisationService;
@@ -46,9 +53,20 @@ public class AdminController {
     @Autowired
     private TaskMappingService taskMappingService;
 
+
+    @GetMapping("/my-organisation")
+    public ResponseEntity<OrganisationResponse> getMyOrganisation(HttpServletRequest request) {
+        User admin = RequestUtils.getCurrentUser(request);
+        OrganisationResponse response = organisationService.getOrganisationInfo(admin.getOrganisationId());
+        return ResponseEntity.ok(response);
+    }
+
     @PostMapping("/organisation")
     public ResponseEntity<OrganisationResponse> createOrganisation(@Valid @RequestBody OrganisationRequest request) {
-        return ResponseEntity.ok(organisationService.createOrganisation(request));
+        logger.info("Creating new organisation: {}", request.getName());
+        OrganisationResponse response = organisationService.createOrganisation(request);
+        logger.debug("Created organisation: {}", response);
+        return ResponseEntity.ok(response);
     }
 
     @GetMapping("/organisation/{id}")

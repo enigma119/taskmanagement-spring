@@ -52,12 +52,13 @@ public class AuthController {
         SecurityContextHolder.getContext().setAuthentication(authentication);
         String jwt = jwtTokenProvider.generateToken(authentication);
         
-        org.springframework.security.core.userdetails.UserDetails userDetails =
+        org.springframework.security.core.userdetails.UserDetails userDetails = 
                 (org.springframework.security.core.userdetails.UserDetails) authentication.getPrincipal();
         
-        List<String> roles = userDetails.getAuthorities().stream()
+        String role = userDetails.getAuthorities().stream()
+                .findFirst()
                 .map(GrantedAuthority::getAuthority)
-                .collect(Collectors.toList());
+                .orElse("ROLE_MEMBER");
         
         User user = userRepository.findByUsername(userDetails.getUsername()).orElseThrow();
 
@@ -67,7 +68,7 @@ public class AuthController {
                 .id(user.getId())
                 .username(user.getUsername())
                 .email(user.getEmail())
-                .roles(roles)
+                .role(role)
                 .build());
     }
 
@@ -88,34 +89,22 @@ public class AuthController {
         Organisation organisation = organisationRepository.findById(signUpRequest.getOrganizationId().toString())
                 .orElseThrow(() -> new RuntimeException("Organisation non trouvée"));
 
-        Set<String> strRoles = signUpRequest.getRoles();
-        Set<String> roles = new HashSet<>();
-
-        if (strRoles == null) {
-            roles.add("ROLE_ADMIN");
-        } else {
-            strRoles.forEach(role -> {
-                switch (role) {
-                    case "admin":
-                        roles.add("ROLE_ADMIN");
-                        break;
-                    default:
-                        roles.add("ROLE_MEMBER");
-                }
-            });
+        String role = "ROLE_MEMBER";
+        if (signUpRequest.getRole() != null && signUpRequest.getRole().equals("admin")) {
+            role = "ROLE_ADMIN";
         }
 
         User user;
         String encodedPassword = encoder.encode(signUpRequest.getPassword());
 
-        if (roles.contains("ROLE_ADMIN")) {
+        if (role.equals("ROLE_ADMIN")) {
             Admin admin = Admin.builder()
                     .username(signUpRequest.getUsername())
                     .password(encodedPassword)
                     .name(signUpRequest.getName())
                     .email(signUpRequest.getEmail())
                     .organisationId(organisation.getId())
-                    .roles(roles)
+                    .role(role)
                     .build();
             
             user = admin;
@@ -126,7 +115,7 @@ public class AuthController {
                     .name(signUpRequest.getName())
                     .email(signUpRequest.getEmail())
                     .organisationId(organisation.getId())
-                    .roles(roles)
+                    .role(role)
                     .score(0)
                     .build();
             
@@ -138,7 +127,7 @@ public class AuthController {
                     .name(signUpRequest.getName())
                     .email(signUpRequest.getEmail())
                     .organisationId(organisation.getId())
-                    .roles(roles)
+                    .role(role)
                     .score(0)
                     .build();
             

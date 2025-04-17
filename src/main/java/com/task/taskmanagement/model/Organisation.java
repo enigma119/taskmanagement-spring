@@ -7,6 +7,12 @@ import lombok.NoArgsConstructor;
 import org.springframework.data.annotation.Id;
 import org.springframework.data.mongodb.core.mapping.Document;
 import org.springframework.data.mongodb.core.mapping.Field;
+import com.task.taskmanagement.service.ToolService;
+import com.task.taskmanagement.service.UserService;
+import com.task.taskmanagement.service.TaskService;
+import org.springframework.beans.factory.annotation.Autowired;
+import com.task.taskmanagement.dto.response.ToolResponse;
+import com.task.taskmanagement.repository.MemberRepository;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -34,6 +40,15 @@ public class Organisation {
     @Builder.Default
     private List<String> taskIds = new ArrayList<>();
 
+    @Autowired
+    private transient MemberRepository memberRepository;
+    
+    @Autowired
+    private transient ToolService toolService;
+    
+    @Autowired
+    private transient TaskService taskService;
+
     public void addUserId(String userId) {
         userIds.add(userId);
     }
@@ -47,42 +62,22 @@ public class Organisation {
     }
 
     public int getMemberCount() {
-        int count = 0;
-        for (User user : users) {
-            if (user instanceof Member) {
-                count++;
-            }
-        }
-        return count;
+        return memberRepository.findByOrganisationId(this.id).size();
     }
     
     public int getTotalScore() {
-        int totalScore = 0;
-        for (User user : users) {
-            if (user instanceof Member) {
-                totalScore += ((Member) user).getScore();
-            }
-        }
-        return totalScore;
+        return memberRepository.findByOrganisationId(this.id).stream()
+                .mapToInt(Member::getScore)
+                .sum();
     }
     
     public int getCompletedTaskCount() {
-        int count = 0;
-        for (Task task : tasks) {
-            if (task.getStatus() == com.task.taskmanagement.model.enums.TaskStatus.DONE) {
-                count++;
-            }
-        }
-        return count;
+        return (int) taskService.getTasksByOrganisationId(this.id).stream()
+                .filter(task -> task.getStatus() == com.task.taskmanagement.model.enums.TaskStatus.DONE)
+                .count();
     }
 
-    public List<Tool> getAvailableTools() {
-        List<Tool> availableTools = new ArrayList<>();
-        for (Tool tool : tools) {
-            if (tool.isAvailable()) {
-                availableTools.add(tool);
-            }
-        }
-        return availableTools;
+    public List<ToolResponse> getAvailableTools() {
+        return toolService.getAvailableTools(this.id);
     }
 }

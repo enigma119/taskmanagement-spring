@@ -8,9 +8,6 @@ import org.springframework.data.annotation.Id;
 import org.springframework.data.mongodb.core.mapping.Document;
 import org.springframework.data.mongodb.core.mapping.Field;
 
-import java.util.HashSet;
-import java.util.Set;
-
 @Document(collection = "users")
 @Data
 @SuperBuilder
@@ -28,5 +25,5 @@ public abstract class User {
     @Field("organisation_id")
     private String organisationId;
 
-    private Set<String> roles = new HashSet<>();
+    private String role;
 }

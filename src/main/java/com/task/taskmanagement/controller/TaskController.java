@@ -63,9 +63,9 @@ public class TaskController {
     }
     
     @GetMapping("/{id}/tools")
-    public ResponseEntity<List<Tool>> getTaskTools(@PathVariable String id) {
+    public ResponseEntity<List<String>> getTaskTools(@PathVariable String id) {
         Task task = taskService.getTaskById(id);
-        return ResponseEntity.ok(task.getTools());
+        return ResponseEntity.ok(task.getToolIds());
     }
     
     @PutMapping("/{id}/status")
